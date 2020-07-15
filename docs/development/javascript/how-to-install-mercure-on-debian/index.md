@@ -26,8 +26,9 @@ languages: ["javascript", "php", "bash"]
 
 ## Introduction
 
-Mercure is an open source tool built on top of HTTP and SSE which allows you to easily implement true real-time communication in your web applications. While the idea of this is not unique or new, Mercure lets you implement it fairly easily. I’m using the term “True real-time communication” because developers frequently mock real time communication by polling. Polling is great for small scale applications, but for large scale real-time communication can save you a whole bunch of useless requests thus traffic and CPU load. But what about WebSocket API isn’t that exactly the same? Well it is and it isn’t. WebSocket API is low level, whereas Mercure is High Level. Using Mercure you don’t have to manually implement authorization, re-connection, presence API etc.
-In a nutshell if you need a persistent connection between a client and a server which can be used by both to send and receive data and you don’t want to implement it all from scratch using WebSockets - Mercure is the tool for the job.
+Mercure is an open source tool built on top of HTTP and SSE which allows you to easily implement true real-time communication in your web applications. While this concept is not unique or new, Mercure lets you implement it fairly easily. I’m using the term “true real-time communication” because developers frequently simulate real time communication by polling. Polling works great for small scale applications, but for large scale web apps real-time communication can save you a whole bunch of useless requests thus traffic and CPU load. But what about the WebSocket API and isn’t it exactly the same? Well, it is and it isn’t. The WebSocket API is 'low level', whereas Mercure is 'high level'. Using Mercure you don’t have to manually implement authorization, re-connection, presence API, etc.
+
+In a nutshell, if you need a persistent connection between a client and a server, which can be used by both to send and receive data, and you don’t want to implement it all from scratch using WebSockets - Mercure is the tool for the job.
 
 In this guide, you will learn:
 
@@ -35,12 +36,13 @@ In this guide, you will learn:
 - [How to configure Mercure as a Service](#how-to-configure-mercure-as-a-service) on Ubuntu/Debian/Linux Mint
 - [Using Mercure in an example](#using-mercure-in-an-example) to verify it works
 
+
 {{< note >}}
 You can [download all of the example files for this guide here](how-to-install-mercure.tar.gz).
 {{< /note >}}
 
 ## How to install Mercure
-First thing is first, head to the [Releases page in the Mercure GitHub](https://github.com/dunglas/mercure/releases). In this guide I’ll be using the v0.10.2 for Linux x86/64 (mercure_0.10.2_Linux_x86_64.tar.gz).
+First things first, head to the [Releases page in the Mercure GitHub](https://github.com/dunglas/mercure/releases). In this guide I’ll be using the v0.10.2 for Linux x86/64 (mercure_0.10.2_Linux_x86_64.tar.gz).
 
 ```bash
 wget https://github.com/dunglas/mercure/releases/download/v0.10.2/mercure_0.10.2_Linux_x86_64.tar.gz && mkdir mercure && tar -zxvf mercure_0.10.2_Linux_x86_64.tar.gz -C mercure
@@ -54,7 +56,10 @@ Which should output:
 {{< output >}}
 Invalid config: one of “jwt_key” or “publisher_jwt_key” configuration parameter must be defined. 
 {{< /output >}}
-But what is JWT? JWT or JSON Web Token is an open standard for securely transmitting information between parties in JSON. I won’t go into too much detail about JWT if you’re interested head to their homepage to learn more.
+
+But what is JWT? JWT stands for JSON Web Token and is an open standard for securely transmitting information between parties in JSON. I won’t go into too much detail about JWT here, so if you’re interested head to their [homepage](https://jwt.io) to learn more.
+The JWT Key is a string used to encode the JWT Token. Think of it as a password.
+
 Let’s supply a jwt-key and rerun mercure:
 
         ./mercure --jwt-key=’!ChangeMe!’ --addr=’localhost:3000’ --allow-anonymous --cors-allowed-origins=’*’
@@ -67,11 +72,11 @@ Welcome to Mercure!
 
 ## How to configure Mercure as a Service
 
-So far so good, but there is one problem: if you terminate your terminal or the command gets closed or fails your mercure server will close and your customers will lose their persistent connections and live updates.
-In order to avoid accidental closing of our Mercure Hub I will use a software called Supervisor or Supervisor daemon(Supervisord). In a few words Supervisord is a process management system that will keep our process running, reboot on crashes and enable logging.
+So far so good, but there is one problem: if you terminate your terminal or the command gets closed / fails your mercure server will shut down and your customers will lose their persistent connections and live updates.
+In order to avoid accidental shut downs of our Mercure Hub I will use a software called Supervisor or Supervisor daemon (Supervisord). In a few words, Supervisord is a process management system that will keep our process running, reboot on crashes and enable logging. 
 
 ### Installing supervisor
-As the root user run the following command to install the Supervisor package:
+Using the root user, run the following command to install the Supervisor package:
 ```bash
 apt-get install supervisor
 ```
@@ -85,7 +90,7 @@ systemctl status supervisor
 
 ### Setting up supervisor for Mercure
 
-The configuration files for all programs supervisor is managing can be found in /etc/supervisor/conf.d so in order to add mercure we’ll create a new file there:
+The configuration files for all programs supervisor is managing can be found in /etc/supervisor/conf.d In order to add mercure we’ll create a new 'mercure.conf' file there:
 
 {{< file "/etc/supervisor/conf.d/mercure.conf" bash >}}
 [program:mercure]
@@ -106,7 +111,7 @@ stdout_logfile=/path/to/mercure/out.log
 stderr_logfile=/path/to/mercure/error.log
 {{< /file >}}
 
-It is very important to change the path in the file to the path of mercure in your system, and the JWT_KEY to the key you’ll be using. This configures Supervisor to provide the needed environment variables which Mercure uses for options, which you can read more about in the [config docs of Mercure here](https://mercure.rocks/docs/hub/config). Most importantly our script will autostart, autorestart and log to the /path/to/mercure/out.log and /path/to/mercure/error.log files.
+Important: it is crucial to change the path in the file to the path of mercure in your system, and the JWT_KEY to the key you’ll be using. This configures Supervisor to provide the needed environment variables which Mercure uses for options, you can read more about this concept in the [config docs of Mercure here](https://mercure.rocks/docs/hub/config). Most importantly, our script will autostart, autorestart and log to the /path/to/mercure/out.log and /path/to/mercure/error.log files.
 
 Now we have to make supervisor aware of our new config file by running the following command:
 
@@ -131,13 +136,13 @@ To which the output should be similar to:
 Mercure:mercure_0        RUNNING     pid XXX, uptime 0:01:00
 {{< /output >}}
 
-Now that we’ve installed mercure and made sure the server will autostart and autoreload on crashes we can test the whole thing with a simple example.
+Now that we’ve installed mercure and made sure the server will autostart and autoreload on crashes, we can test the whole setup with a simple example.
 
 ## Using Mercure in an example
 
 ### Generate a JWT Token
-In order for our Publisher to be authorized to push updates to our Mercure Hub we need to generate a JWT token. 
-For our example we want our publisher to be able to push to all topics so our payload should contain at least the following structure:
+To push updates to a Mercure Hub we need a Publisher, but we have to authorize it with a JWT Token first. The anatomy of a JWT Token mainly consists of a secret key and a payload. The secret key we've already set in the ["How to install mercure"](#how-to-install-mercure) chapter. In order to authorize the Publisher to push to all topics our payload should contain at least the following structure:
+
 ```json
 {
   "mercure": {
@@ -161,7 +166,7 @@ The easiest way I've found to push updates to Mercure using PHP is by using the 
 
 `composer require symfony/mercure`
 
-Then in order to push an update to the Mercure Hub you can use the packagein the following way:
+To push an update to the Mercure Hub you can use the package in the following way:
 {{< file "Pusher.php" php >}}
 <?php
 require_once("vendor/autoload.php");
@@ -179,11 +184,12 @@ $publisher = new Publisher(HUB_URL, new StaticJwtProvider(JWT));
 $id = $publisher(new Update('https://example.com/linode/1.jsonld', 'Hi from Linode!'));
 
 {{< /file >}}
+
 The idea of the pusher is to tell the Mercure Hub to push an update to all clients subscribed to “https://example.com/linode/1.jsonld” with the payload “Hi from Linode!”
 
 ### Subscribing to a topic in Mercure using Javascript
 
-Now in order to properly test our system we need a client. Lets client an index.html file with the following contents:
+Now in order to properly test our system we need a client. Lets create an index.html file with the following contents:
 {{< file "index.html" html >}}
 <script>
    const url = new URL('http://localhost:3000/.well-known/mercure');
@@ -196,6 +202,7 @@ Now in order to properly test our system we need a client. Lets client an index.
    eventSource.onmessage = e => alert(e.data); // do something with the payload
 </script>
 {{< /file >}}
+
 This subscribes our browser to the topic  https://example.com/books/{id} where {id} is a parameter. Now test it out by openning index.html and running the Pusher.php by:
 
         php Pusher.php
@@ -205,4 +212,6 @@ Your browser should have opened a JavaScript alert instantly.
 
 ![Success](success.png "Success")
 
-Now test opening the index.html a few more times and run the Pusher again. The tabs in this case are somewhat similar to multiple clients and running the pusher sends real-time updates to all tabs.
+Now test opening the index.html a few more times in separate tabs and run the Pusher again. The tabs in this case are somewhat similar to multiple clients and running the pusher sends real-time updates to all tabs.
+
+You have now sucessfully setup a Mercure hub, a Pusher and a Client and are on your way of making your reactive apps work.
